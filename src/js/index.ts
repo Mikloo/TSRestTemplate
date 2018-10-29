@@ -27,28 +27,56 @@ buttonAdd.addEventListener('click',addCustomer);
 let buttonDelete:HTMLButtonElement = <HTMLButtonElement> document.getElementById("deleteButton");
 buttonDelete.addEventListener('click',deleteCustomer);
 
+  //funktion som returnerer et HTMLLIELEMENT og som tager tre parametre
+    //
+function CreateLiElement(tekst:string, classAttribut:string, id: number) : HTMLLIElement{
+    
+    let newLiElement = document.createElement('li');
+    let newText = document.createTextNode(tekst)
+    
+    newLiElement.setAttribute('class',classAttribut);
+    newLiElement.setAttribute('id',id.toString());
+    
+    newLiElement.appendChild(newText);
+
+    return newLiElement;
+}
+
 function showAllCustomers():void {
 
     axios.get<ICustomer[]>(uri)
     .then(function (response:AxiosResponse<ICustomer[]>):void{
 
-        let result : string = "<ol>";
+        let olElement : HTMLOListElement = document.createElement('ol');
+
+        // let result : string = "<ol>";
+        let x:number = 0;
         response.data.forEach((customer : ICustomer) => {
+            x++;
             if(customer == null)
               {
-                result += "<li> NULL element</li>"        
+                  olElement.appendChild(CreateLiElement("NULL element","error",x));
+                // result += "<li> NULL element</li>"        
               }
             else
               {
-                result += "<li> <b>id</b>: "+ customer.id + " <i>navn</i> :" + customer.firstName + " " +customer.lastName + " " +customer.year +"</li>"        
+                let tekst : string =  "id(i database):"+customer.id+" Navn :" + customer.firstName + " " +customer.lastName + " " +customer.year;
+                // result += "<li> <b>id</b>: "+ customer.id + " <i>navn</i> :" + customer.firstName + " " +customer.lastName + " " +customer.year +"</li>"        
+                olElement.appendChild(CreateLiElement(tekst,"r1",customer.id));
 
               }
             });
 
-        result += "</ol>";
+        // result += "</ol>";
 
-        divElement.innerHTML = result;
+        // divElement.innerHTML = result;
 
+        //hvis divElement allerede har et child skal det først slettes førend 
+        //nyt child indsættes
+        if (divElement.firstChild)
+          divElement.removeChild(divElement.firstElementChild);
+        
+        divElement.appendChild(olElement);
     }
     )
     .catch(function (error:AxiosError):void{
@@ -96,13 +124,13 @@ function showOneCustomer():void {
 
 function addCustomer():void{
  
-    let addModelelement: HTMLInputElement = <HTMLInputElement>document.getElementById("AddFirstName");
-    let addVendorElement: HTMLInputElement = <HTMLInputElement>document.getElementById("AddLastName");
-    let addPriceElement: HTMLInputElement = <HTMLInputElement>document.getElementById("AddYear");
+    let addfirstnameElement: HTMLInputElement = <HTMLInputElement>document.getElementById("addFirstName");
+    let addlastnameElement: HTMLInputElement = <HTMLInputElement>document.getElementById("addLastName");
+    let addyearElement: HTMLInputElement = <HTMLInputElement>document.getElementById("addYear");
     
-    let myFirstName: string = addModelelement.value;
-    let myLastName:string = addVendorElement.value;
-    let myYear : number = +addPriceElement.value;
+    let myFirstName: string = addfirstnameElement.value;
+    let myLastName:string = addlastnameElement.value;
+    let myYear : number = +addyearElement.value;
 
     axios.post<ICustomer>(uri,{FirstName:myFirstName,LastName:myLastName, Year:myYear})
     .then((response:AxiosResponse) => {console.log("response " +response.status + " " +response.statusText )})
@@ -111,12 +139,13 @@ function addCustomer():void{
 }
 
 
-function deleteCustomer<ICar>():void{
+function deleteCustomer<ICustomer>():void{
     let output: HTMLDivElement = <HTMLDivElement>document.getElementById("contentDelete");
-    let addModelelement: HTMLInputElement = <HTMLInputElement>document.getElementById("AddId");
-    let myId: string = addModelelement.value;
+    let deleteCustomerElement: HTMLInputElement = <HTMLInputElement>document.getElementById("deleteCustomer");
+    let myId: string = deleteCustomerElement.value;
 
-    axios.delete(uri)
+    let delUri :string = uri+myId;
+    axios.delete(delUri)
     .then(
         (response: AxiosResponse)=>{
             console.log(JSON.stringify(response));
