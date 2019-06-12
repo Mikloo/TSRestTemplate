@@ -1,34 +1,30 @@
-import axios, {
-    AxiosResponse,
-    AxiosError} from "../../node_modules/axios/index";
+import axios, {AxiosResponse,AxiosError} from "../../node_modules/axios/index";
 
-//http://rest-pele-easj-dk.azurewebsites.net/api/Cars
 
-interface ICustomer {
+interface IGeneric {
     id:number
     firstName:string;
     lastName:string;
-    year:number;
 }
 
-const  uri:string = "https://restcustomerservicecore20181028075543.azurewebsites.net/api/customer/";
+const  uri:string = "https://restdatabasetemplate.azurewebsites.net/api/DBTemps/";
 
 let divElement : HTMLDivElement = <HTMLDivElement> document.getElementById("content");
 let buttonelement:HTMLButtonElement = <HTMLButtonElement> document.getElementById("getAllButton");  
-buttonelement.addEventListener('click',showAllCustomers);
+buttonelement.addEventListener('click',showAll);
 
 let buttonOneelement:HTMLButtonElement = <HTMLButtonElement> document.getElementById("getOneButton");  
-buttonOneelement.addEventListener('click',showOneCustomer);
+buttonOneelement.addEventListener('click',showOne);
 
 
 let buttonAdd : HTMLButtonElement = <HTMLButtonElement> document.getElementById("addButton");
-buttonAdd.addEventListener('click',addCustomer);
+buttonAdd.addEventListener('click',add);
 
 let buttonDelete:HTMLButtonElement = <HTMLButtonElement> document.getElementById("deleteButton");
-buttonDelete.addEventListener('click',deleteCustomer);
+buttonDelete.addEventListener('click', myDelete);
 
   //funktion som returnerer et HTMLLIELEMENT og som tager tre parametre
-    //
+  //Skaber Li elementerne
 function CreateLiElement(tekst:string, classAttribut:string, id: number) : HTMLLIElement{
     
     let newLiElement = document.createElement('li');
@@ -42,36 +38,31 @@ function CreateLiElement(tekst:string, classAttribut:string, id: number) : HTMLL
     return newLiElement;
 }
 
-function showAllCustomers():void {
+function showAll():void {
+    // Get  typen IGeneric array
+    axios.get<IGeneric[]>(uri)
+    // Wrap icoin array indtil et reponse 
+    .then(function (response:AxiosResponse<IGeneric[]>):void{
 
-    axios.get<ICustomer[]>(uri)
-    .then(function (response:AxiosResponse<ICustomer[]>):void{
-
+        // Skaber ol elemet
         let olElement : HTMLOListElement = document.createElement('ol');
 
-        // let result : string = "<ol>";
         let x:number = 0;
-        response.data.forEach((customer : ICustomer) => {
+        // Den tager AxiosResponse data ind i foreach
+        response.data.forEach((customer : IGeneric) => {
             x++;
             if(customer == null)
               {
                   olElement.appendChild(CreateLiElement("NULL element","error",x));
-                // result += "<li> NULL element</li>"        
               }
             else
               {
-                let tekst : string =  "id(i database):"+customer.id+" Navn :" + customer.firstName + " " +customer.lastName + " " +customer.year;
-                // result += "<li> <b>id</b>: "+ customer.id + " <i>navn</i> :" + customer.firstName + " " +customer.lastName + " " +customer.year +"</li>"        
+                //appendChild til Li tag
+                let tekst : string =  "Id: "+customer.id+" Navn: " + customer.firstName + " " +customer.lastName;
+                //Giver den class ri og en id="x"
                 olElement.appendChild(CreateLiElement(tekst,"r1",customer.id));
-
               }
             });
-
-        // result += "</ol>";
-
-        // divElement.innerHTML = result;
-
-        //hvis divElement allerede har et child skal det først slettes førend 
         //nyt child indsættes
         if (divElement.firstChild)
           divElement.removeChild(divElement.firstElementChild);
@@ -84,7 +75,7 @@ function showAllCustomers():void {
     })
 }
 
-function showOneCustomer():void {
+function showOne():void {
 
     let showOneCustomer1 : HTMLInputElement = <HTMLInputElement> document.getElementById("getOneCustomer");
     let oneCustomerValue : string = showOneCustomer1.value;
@@ -92,29 +83,22 @@ function showOneCustomer():void {
 
     
 
-    axios.get<ICustomer>(newUri)
-    .then(function (response:AxiosResponse<ICustomer>):void{
+    axios.get<IGeneric>(newUri)
+    .then(function (response:AxiosResponse<IGeneric>):void{
 
-
-        let customer : ICustomer = <ICustomer>response.data;
+        let customer : IGeneric = <IGeneric>response.data;
         let result : string = "<ol>";
 
         if (response.data == null)
         {
             result += "<li> NULL element</li>"
         }
-
         else;
         { 
-            result += "<li> <b>id</b>: "+ customer.id + " <i>navn</i> :" + customer.firstName + " " +customer.lastName + " " +customer.year +"</li>"        
+            result += "<li> <b>Id</b>: "+ customer.id + " <b>Navn</b>: " + customer.firstName + " " +customer.lastName + "</li>"        
         }
-
-       
-
         result += "</ol>";
-
         divElement.innerHTML = result;
-
     }
     )
     .catch(function (error:AxiosError):void{
@@ -122,24 +106,21 @@ function showOneCustomer():void {
     })
 }
 
-function addCustomer():void{
+function add():void{
  
     let addfirstnameElement: HTMLInputElement = <HTMLInputElement>document.getElementById("addFirstName");
     let addlastnameElement: HTMLInputElement = <HTMLInputElement>document.getElementById("addLastName");
-    let addyearElement: HTMLInputElement = <HTMLInputElement>document.getElementById("addYear");
     
     let myFirstName: string = addfirstnameElement.value;
     let myLastName:string = addlastnameElement.value;
-    let myYear : number = +addyearElement.value;
 
-    axios.post<ICustomer>(uri,{FirstName:myFirstName,LastName:myLastName, Year:myYear})
+    axios.post<IGeneric>(uri,{FirstName:myFirstName,LastName:myLastName})
     .then((response:AxiosResponse) => {console.log("response " +response.status + " " +response.statusText )})
     .catch((error:AxiosError) => {console.log(error);} )
     //.then( ()=> {co.innerHTML='<h2> er i finally </h2>'})
 }
 
-
-function deleteCustomer<ICustomer>():void{
+function myDelete<IGeneric>():void{
     let output: HTMLDivElement = <HTMLDivElement>document.getElementById("contentDelete");
     let deleteCustomerElement: HTMLInputElement = <HTMLInputElement>document.getElementById("deleteCustomer");
     let myId: string = deleteCustomerElement.value;
